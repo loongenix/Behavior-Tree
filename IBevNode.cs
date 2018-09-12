@@ -1,11 +1,10 @@
 using System.Collections.Generic; 
 
-abstract class  BevNode {
-     protected List < BevNode > childNodeList; 
+abstract class BevNode {
+    protected List < BevNode > childNodeList; 
     protected BevNode parentNode {get; set; }
-
-   
-
+    protected BevNode LastActiveNode;
+    protected BevNode ActiveNode;
     /// <summary>
     /// 外在在前提
     /// </summary>
@@ -19,29 +18,41 @@ abstract class  BevNode {
         return (NodePrecondition == null || NodePrecondition.ExternalCondition (input)) && _DoEvaluate (input); 
     }
 
-    public void Transition(BevNodeInputParam input) {
-        _DoTransition(input); 
+    public void Transition (BevNodeInputParam input) {
+        _DoTransition (input); 
     }
-    public virtual BevRunningState Tick(BevNodeInputParam inputParam, BevNodeOutputParam outputParam) {
-        return BevRunningState.RUNNING; 
-    }
-
-    public void AddChildNode(BevNode node) {
-        childNodeList.Add(node);
+    public  EBevRunningState Tick (BevNodeInputParam inputParam, BevNodeOutputParam outputParam) {
+        return _DoTick (inputParam, outputParam); 
     }
 
-    public void SetNodePrecondition(BevNodePrecondition condition){
-        NodePrecondition=condition;
+    public void AddChildNode (BevNode node) {
+        childNodeList.Add (node); 
     }
 
- /// <summary>
+    public void SetNodePrecondition (BevNodePrecondition condition) {
+        NodePrecondition = condition; 
+    }
+
+
+    protected void SetActiveNode(BevNode node){
+        LastActiveNode=ActiveNode;
+        ActiveNode=node;
+        if(parentNode!=null){
+            parentNode.SetActiveNode(node);
+        }
+
+    }
+
+    /// <summary>
     /// 内在前提
     /// </summary>
     /// <param name="input">输入</param>
     protected virtual bool _DoEvaluate (BevNodeInputParam input) {
         return true; 
     }
-    protected abstract void _DoTransition(BevNodeInputParam input); 
+    protected virtual void _DoTransition (BevNodeInputParam input) {}
 
-
+    protected virtual EBevRunningState _DoTick (BevNodeInputParam inputParam, BevNodeOutputParam outputParam) {
+        return EBevRunningState.Finish; 
+    }
 }
